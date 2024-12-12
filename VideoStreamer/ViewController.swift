@@ -16,7 +16,9 @@ class ViewController: UIViewController {
 //            let comments = data.comments
 //            comments.forEach { print($0.comment) }
 //        }
-        collectionView.register(VideoCell.self, forCellWithReuseIdentifier: "videoCell")
+        let nib = UINib(nibName: "VideoCell", bundle: nil)
+        collectionView.register(nib, forCellWithReuseIdentifier: "videoCell")
+
         collectionView.dataSource = self
         collectionView.delegate = self
 
@@ -39,7 +41,7 @@ extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate, 
                 fatalError("Unable to dequeue VideoCell with identifier: videoCell")
             }
            
-        cell.backgroundColor = .red
+//        cell.backgroundColor = .red
            
             
             return cell
