@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Videos: Codable {
+struct Video: Codable {
     let id: Int
     let userID: Int
     let username: String
@@ -21,6 +21,6 @@ struct Videos: Codable {
 }
 
 struct VideosData: Codable {
-    let videos: [Videos]
+    let videos: [Video]
 }
 

@@ -10,12 +10,16 @@ import UIKit
 class ViewController: UIViewController {
     
     @IBOutlet weak var collectionView: UICollectionView!
+    var videos: [Video] = []
     override func viewDidLoad() {
         super.viewDidLoad()
-//        if let data = VideoStreamerUtils.loadCommentsData() {
-//            let comments = data.comments
+        if let data = VideoStreamerUtils.loadVideosData() {
+            videos  = data.videos
+            DispatchQueue.main.async {
+                self.collectionView.reloadData()
+            }
 //            comments.forEach { print($0.comment) }
-//        }
+        }
         let nib = UINib(nibName: "VideoCell", bundle: nil)
         collectionView.register(nib, forCellWithReuseIdentifier: "videoCell")
 
@@ -33,7 +37,7 @@ extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate, 
         return 1
     }
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 5
+        return videos.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -42,7 +46,7 @@ extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate, 
             }
            
 //        cell.backgroundColor = .red
-           
+        cell.configure(with: videos[indexPath.item])
             
             return cell
     }
