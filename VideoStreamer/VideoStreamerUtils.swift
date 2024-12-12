@@ -24,4 +24,20 @@ class VideoStreamerUtils {
             return nil
         }
     }
+    
+    static func loadCommentsData() -> CommentsData? {
+        guard let url = Bundle.main.url(forResource: "CommentsData", withExtension: "json") else {
+            print("Failed to locate CommentsData.json in bundle.")
+            return nil
+        }
+        
+        do {
+            let data = try Data(contentsOf: url)
+            let commentsData = try JSONDecoder().decode(CommentsData.self, from: data)
+            return commentsData
+        } catch {
+            print("Failed to decode CommentsData.json: \(error.localizedDescription)")
+            return nil
+        }
+    }
 }

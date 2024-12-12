@@ -11,6 +11,10 @@ class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        if let data = VideoStreamerUtils.loadCommentsData() {
+            let comments = data.comments
+            comments.forEach { print($0.comment) }
+        }
         // Do any additional setup after loading the view.
     }
 
