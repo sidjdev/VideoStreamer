@@ -26,6 +26,7 @@ class VideoCell: UICollectionViewCell {
     
     private var comments: [Comment] = []
     
+    
     override func awakeFromNib() {
         super.awakeFromNib()
         
@@ -84,13 +85,10 @@ class VideoCell: UICollectionViewCell {
     }
     
     private func setupVideoPlayer(with url: URL) {
-        // Remove existing player layer if needed
         playerLayer?.removeFromSuperlayer()
         
         // Initialize the player
         player = AVPlayer(url: url)
-        
-        // Create a player layer and add it to the videoContainerView
         playerLayer = AVPlayerLayer(player: player)
         playerLayer?.frame = videoContainerView.bounds
         playerLayer?.videoGravity = .resizeAspectFill
@@ -99,23 +97,39 @@ class VideoCell: UICollectionViewCell {
             videoContainerView.layer.addSublayer(playerLayer)
         }
         
-        // Automatically play the video
+        // Add notification for looping
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(playerDidReachEnd),
+            name: .AVPlayerItemDidPlayToEndTime,
+            object: player?.currentItem
+        )
+        
         player?.play()
+    }
+
+    @objc private func playerDidReachEnd() {
+        player?.seek(to: .zero)
+        player?.play()
+    }
+
+    func startVideo() {
+        player?.play()
+    }
+
+    func stopVideo() {
+        player?.pause()
     }
     
     override func prepareForReuse() {
         super.prepareForReuse()
         
-        // Reset video player
-        player?.pause()
+        stopVideo()
+        NotificationCenter.default.removeObserver(self)
         player = nil
         playerLayer?.removeFromSuperlayer()
-        playerLayer = nil
-        
-        // Clear comments
-        comments = []
-        commentsTable.reloadData()
     }
+
     
     private func autoScrollComments() {
         guard comments.count > 0 else { return }
