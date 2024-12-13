@@ -22,25 +22,40 @@ class VideoCell: UICollectionViewCell {
     private var player: AVPlayer?
     private var playerLayer: AVPlayerLayer?
     
-    
     @IBOutlet weak var commentsTable: UITableView!
     
+    private var comments: [Comment] = []
     
     override func awakeFromNib() {
         super.awakeFromNib()
+        
+        // Initialize rounded corners
         roundedCorners.append(followBtn)
-        //        roundedCorners.append(viewersView)
         roundedCorners.forEach { element in
             element.layer.cornerRadius = 10
         }
-        // Initialization code
+        
+        commentsTable.backgroundColor = .clear
+        commentsTable.separatorStyle = .none
+        commentsTable.showsVerticalScrollIndicator = false
+        
+        // Set up the comments table view
+        commentsTable.delegate = self
+        commentsTable.dataSource = self
+        
+        // Register the custom cell
+        let nib = UINib(nibName: "CommentsCell", bundle: nil)
+        commentsTable.register(nib, forCellReuseIdentifier: "commentsCell")
     }
     
     @IBAction func followAct(_ sender: Any) {
+        // Follow button action
     }
     
-    func configure(with video: Video) {
-        //            titleLabel.text = video.username
+    func configure(with video: Video, andComments comments: [Comment]) {
+        self.comments = comments
+        
+        // Configure video-related UI
         if let thumbnailURL = URL(string: video.profilePicURL) {
             DispatchQueue.global().async {
                 if let data = try? Data(contentsOf: thumbnailURL), let image = UIImage(data: data) {
@@ -51,11 +66,21 @@ class VideoCell: UICollectionViewCell {
             }
         }
         
-        if let videoURL = URL(string: video.video) {
-            setupVideoPlayer(with: videoURL)
-        }
         username.text = video.username
-        likes.text = ("\(video.likes)")
+        likes.text = "\(video.likes)"
+        
+        // Set up video player
+        if let videoURL = URL(string: video.video) {
+            DispatchQueue.main.async { [weak self] in
+                self?.setupVideoPlayer(with: videoURL)
+            }
+        }
+        
+        // Reload the comments table view
+        DispatchQueue.main.async {
+            self.commentsTable.reloadData()
+            self.autoScrollComments()
+        }
     }
     
     private func setupVideoPlayer(with url: URL) {
@@ -73,15 +98,45 @@ class VideoCell: UICollectionViewCell {
         if let playerLayer = playerLayer {
             videoContainerView.layer.addSublayer(playerLayer)
         }
+        
+        // Automatically play the video
+        player?.play()
     }
     
     override func prepareForReuse() {
         super.prepareForReuse()
         
-        // Reset player to avoid overlapping videos
+        // Reset video player
         player?.pause()
         player = nil
         playerLayer?.removeFromSuperlayer()
         playerLayer = nil
+        
+        // Clear comments
+        comments = []
+        commentsTable.reloadData()
+    }
+    
+    private func autoScrollComments() {
+        guard comments.count > 0 else { return }
+        let indexPath = IndexPath(row: comments.count - 1, section: 0)
+        commentsTable.scrollToRow(at: indexPath, at: .bottom, animated: true)
+    }
+    
+}
+
+extension VideoCell: UITableViewDelegate, UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return comments.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "commentsCell", for: indexPath) as? CommentsCell else {
+            fatalError("Unable to dequeue CommentsCell")
+        }
+        
+        let comment = comments[indexPath.row]
+        cell.configure(with: comment) // Assuming your CommentsCell has a `configure(with:)` method
+        return cell
     }
 }

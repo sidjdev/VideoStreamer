@@ -11,13 +11,18 @@ class ViewController: UIViewController {
     
     @IBOutlet weak var collectionView: UICollectionView!
     var videos: [Video] = []
+    var comments: [Comment] = []
     override func viewDidLoad() {
         super.viewDidLoad()
         if let data = VideoStreamerUtils.loadVideosData() {
             videos  = data.videos
-            DispatchQueue.main.async {
-                self.collectionView.reloadData()
+            if let commentsData = VideoStreamerUtils.loadCommentsData() {
+                comments = commentsData.comments
+                DispatchQueue.main.async {
+                    self.collectionView.reloadData()
+                }
             }
+            
 //            comments.forEach { print($0.comment) }
         }
         let nib = UINib(nibName: "VideoCell", bundle: nil)
@@ -46,7 +51,7 @@ extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate, 
             }
            
 //        cell.backgroundColor = .red
-        cell.configure(with: videos[indexPath.item])
+        cell.configure(with: videos[indexPath.item], andComments: comments)
             
             return cell
     }
